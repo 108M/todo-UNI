@@ -10,7 +10,7 @@ import {
 import { courseForSiteId } from "@/lib/courses";
 import { extractTasksFromEmails } from "@/lib/extract";
 import type { FetchedEmail } from "@/lib/imap";
-import { existsSimilarTask, existsSimilarByTitle } from "@/lib/dedup";
+import { existsSimilarTask, existsSimilarByTitle, getExistingExternalIds } from "@/lib/dedup";
 import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
@@ -35,10 +35,14 @@ export async function GET(req: NextRequest) {
   const notifications = await fetchNotifications(jar);
   const db = getDb();
 
+  const alreadyKnown = await getExistingExternalIds(notifications.map((n) => `aulario-${n.id}`));
+
   let inserted = 0;
   const newTitles: string[] = [];
   for (const n of notifications) {
     const externalId = `aulario-${n.id}`;
+    if (alreadyKnown.has(externalId)) continue; // ya procesado en un run anterior
+
     const subject = courseForSiteId(n.siteId)?.name ?? null;
 
     let title = n.title;

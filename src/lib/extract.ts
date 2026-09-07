@@ -20,10 +20,11 @@ type RawResult = {
   type?: TaskType;
 };
 
-// Flash (no Flash-Lite): Flash-Lite no resolvía bien fechas en texto libre
-// ni asignaturas mencionadas dentro del cuerpo del correo. Sigue siendo
-// gratis para este volumen de uso (pocas llamadas al día).
-const MODEL = "gemini-3.5-flash";
+// Flash normal tiene una cuota gratuita de solo 20 peticiones/día — muy
+// poco para un cron cada 30 min. Flash-Lite tiene muchas más (~1000/día) y,
+// con temperature:0, extrae fechas/asignatura igual de bien (el problema
+// real era la no-determinismo, no la capacidad del modelo).
+const MODEL = "gemini-3.5-flash-lite";
 
 const RESPONSE_SCHEMA = {
   type: Type.ARRAY,

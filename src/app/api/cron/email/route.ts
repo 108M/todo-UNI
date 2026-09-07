@@ -5,7 +5,7 @@ import { fetchRecentEmails } from "@/lib/imap";
 import { isLikelyAcademic } from "@/lib/relevance";
 import { extractTasksFromEmails } from "@/lib/extract";
 import { detectCourseInText } from "@/lib/courses";
-import { existsSimilarTask, existsSimilarByTitle } from "@/lib/dedup";
+import { existsSimilarTask, existsSimilarByTitle, getExistingExternalIds } from "@/lib/dedup";
 import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
@@ -23,7 +23,11 @@ export async function GET(req: NextRequest) {
 
   const emails = await fetchRecentEmails(3);
   const relevant = emails.filter(isLikelyAcademic);
-  const extracted = await extractTasksFromEmails(relevant);
+
+  const alreadyKnown = await getExistingExternalIds(relevant.map((e) => e.messageId));
+  const unprocessed = relevant.filter((e) => !alreadyKnown.has(e.messageId));
+
+  const extracted = await extractTasksFromEmails(unprocessed);
 
   const db = getDb();
   let inserted = 0;
@@ -60,6 +64,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     checked: emails.length,
     relevant: relevant.length,
+    unprocessed: unprocessed.length,
     extracted: extracted.length,
     inserted,
   });

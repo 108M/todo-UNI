@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, isNotNull, gt } from "drizzle-orm";
+import { and, eq, gte, lt, isNotNull, gt, inArray } from "drizzle-orm";
 import { getDb } from "@/db";
 import { tasks } from "@/db/schema";
 
@@ -32,6 +32,22 @@ export async function existsSimilarTask(subject: string | null, dueDate: Date | 
     .limit(1);
 
   return rows.length > 0;
+}
+
+/**
+ * Antes de gastar una llamada a la IA, descarta lo que ya está en la BD
+ * (por externalId) — si no, cada ejecución del cron reprocesa los mismos
+ * correos/avisos de los últimos días una y otra vez, agotando la cuota
+ * gratuita de la API sin necesidad.
+ */
+export async function getExistingExternalIds(ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const db = getDb();
+  const rows = await db
+    .select({ externalId: tasks.externalId })
+    .from(tasks)
+    .where(inArray(tasks.externalId, ids));
+  return new Set(rows.map((r) => r.externalId).filter((id): id is string => id !== null));
 }
 
 const STOPWORDS = new Set([

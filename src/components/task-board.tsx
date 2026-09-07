@@ -30,9 +30,12 @@ export default function TaskBoard({ initialTasks }: { initialTasks: TaskDTO[] })
     setSyncing(true);
     setSyncError(null);
     try {
+      const authHeaders = process.env.NEXT_PUBLIC_CRON_SECRET
+        ? { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET}` }
+        : undefined;
       const [emailRes, aularioRes] = await Promise.all([
-        fetch("/api/cron/email"),
-        fetch("/api/cron/aulario"),
+        fetch("/api/cron/email", { headers: authHeaders }),
+        fetch("/api/cron/aulario", { headers: authHeaders }),
       ]);
       if (!emailRes.ok || !aularioRes.ok) throw new Error("sync failed");
       const listRes = await fetch("/api/tasks");

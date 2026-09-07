@@ -6,6 +6,7 @@ import AddTaskForm from "./add-task-form";
 import AgendaView from "./views/agenda-view";
 import SubjectsView from "./views/subjects-view";
 import CalendarView from "./views/calendar-view";
+import EnableNotificationsButton from "./enable-notifications-button";
 
 const TABS = [
   { id: "agenda", label: "AGENDA" },
@@ -83,13 +84,16 @@ export default function TaskBoard({ initialTasks }: { initialTasks: TaskDTO[] })
             </button>
           ))}
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={syncing}
-          className="panel-btn bg-paper px-4 py-2 font-display text-lg tracking-wide disabled:opacity-50"
-        >
-          {syncing ? "ACTUALIZANDO…" : "↻ ACTUALIZAR"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <EnableNotificationsButton />
+          <button
+            onClick={handleRefresh}
+            disabled={syncing}
+            className="panel-btn bg-paper px-4 py-2 font-display text-lg tracking-wide disabled:opacity-50"
+          >
+            {syncing ? "ACTUALIZANDO…" : "↻ ACTUALIZAR"}
+          </button>
+        </div>
       </div>
       {syncError && <p className="text-sm text-ink-soft">{syncError}</p>}
 

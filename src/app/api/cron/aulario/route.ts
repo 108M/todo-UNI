@@ -11,6 +11,7 @@ import { courseForSiteId } from "@/lib/courses";
 import { extractTasksFromEmails } from "@/lib/extract";
 import type { FetchedEmail } from "@/lib/imap";
 import { existsSimilarTask } from "@/lib/dedup";
+import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
 
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
   const db = getDb();
 
   let inserted = 0;
+  const newTitles: string[] = [];
   for (const n of notifications) {
     const externalId = `aulario-${n.id}`;
     const subject = courseForSiteId(n.siteId)?.name ?? null;
@@ -84,8 +86,13 @@ export async function GET(req: NextRequest) {
       .values({ title, subject, dueDate, type, source: "aulario", externalId, rawContent })
       .onConflictDoNothing({ target: tasks.externalId })
       .returning();
-    if (row) inserted += 1;
+    if (row) {
+      inserted += 1;
+      newTitles.push(row.title);
+    }
   }
+
+  await notifyNewTasks(newTitles);
 
   return NextResponse.json({ checked: notifications.length, inserted });
 }

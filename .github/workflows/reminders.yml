@@ -1,0 +1,15 @@
+name: Recordatorios de entregas
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar entregas próximas
+        run: |
+          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://todo-uni.vercel.app/api/cron/reminders

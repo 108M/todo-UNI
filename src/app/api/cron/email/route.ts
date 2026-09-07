@@ -6,6 +6,7 @@ import { isLikelyAcademic } from "@/lib/relevance";
 import { extractTasksFromEmails } from "@/lib/extract";
 import { detectCourseInText } from "@/lib/courses";
 import { existsSimilarTask } from "@/lib/dedup";
+import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
 
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
 
   const db = getDb();
   let inserted = 0;
+  const newTitles: string[] = [];
   for (const task of extracted) {
     const email = relevant.find((e) => e.messageId === task.messageId);
     const subject = task.subject ?? (email ? detectCourseInText(email.text) : null);
@@ -46,8 +48,13 @@ export async function GET(req: NextRequest) {
       })
       .onConflictDoNothing({ target: tasks.externalId })
       .returning();
-    if (row) inserted += 1;
+    if (row) {
+      inserted += 1;
+      newTitles.push(row.title);
+    }
   }
+
+  await notifyNewTasks(newTitles);
 
   return NextResponse.json({
     checked: emails.length,

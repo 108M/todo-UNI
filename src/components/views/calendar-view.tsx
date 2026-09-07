@@ -129,7 +129,7 @@ export default function CalendarView({
                 <button
                   key={key}
                   onClick={() => setSelectedKey(isSelected ? null : key)}
-                  className={`flex min-h-20 flex-col items-stretch gap-1 border-r-[3px] border-ink p-1 text-left last:border-r-0 ${bg} ${
+                  className={`flex min-h-14 flex-col items-stretch gap-1 border-r-[3px] border-ink p-0.5 text-left last:border-r-0 sm:min-h-20 sm:p-1 ${bg} ${
                     inMonth ? "" : "opacity-40"
                   } ${isSelected ? "outline outline-[3px] outline-offset-[-3px] outline-ink" : ""}`}
                 >

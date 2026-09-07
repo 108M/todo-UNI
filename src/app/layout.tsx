@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bangers, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,20 @@ const bodyFont = Inter({
 export const metadata: Metadata = {
   title: "Aulario To-Do",
   description: "Agenda de tareas y entregas de la universidad, en un sitio.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Aulario To-Do",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#111111",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

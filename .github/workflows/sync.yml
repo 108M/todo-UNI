@@ -1,0 +1,19 @@
+name: Sincronizar correo y Aulario
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sincronizar correo
+        run: |
+          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://todo-uni.vercel.app/api/cron/email
+      - name: Sincronizar Aulario
+        run: |
+          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://todo-uni.vercel.app/api/cron/aulario

@@ -1,3 +1,8 @@
+// Algunas versiones de Chrome solo consideran la app "instalable de verdad"
+// (WebAPK) si el service worker tiene un listener de fetch, aunque no haga
+// nada especial con él — si no, se queda como un simple acceso directo.
+self.addEventListener("fetch", () => {});
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {

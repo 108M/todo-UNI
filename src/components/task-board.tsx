@@ -29,8 +29,11 @@ export default function TaskBoard({ initialTasks }: { initialTasks: TaskDTO[] })
     setSyncing(true);
     setSyncError(null);
     try {
-      const syncRes = await fetch("/api/cron/email");
-      if (!syncRes.ok) throw new Error("sync failed");
+      const [emailRes, aularioRes] = await Promise.all([
+        fetch("/api/cron/email"),
+        fetch("/api/cron/aulario"),
+      ]);
+      if (!emailRes.ok || !aularioRes.ok) throw new Error("sync failed");
       const listRes = await fetch("/api/tasks");
       if (!listRes.ok) throw new Error("list failed");
       setTasks(await listRes.json());

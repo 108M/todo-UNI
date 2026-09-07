@@ -5,6 +5,7 @@ import { fetchRecentEmails } from "@/lib/imap";
 import { isLikelyAcademic } from "@/lib/relevance";
 import { extractTasksFromEmails } from "@/lib/extract";
 import { detectCourseInText } from "@/lib/courses";
+import { existsSimilarTask } from "@/lib/dedup";
 
 export const maxDuration = 60;
 
@@ -28,12 +29,16 @@ export async function GET(req: NextRequest) {
   for (const task of extracted) {
     const email = relevant.find((e) => e.messageId === task.messageId);
     const subject = task.subject ?? (email ? detectCourseInText(email.text) : null);
+    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+
+    if (await existsSimilarTask(subject, dueDate)) continue;
+
     const [row] = await db
       .insert(tasks)
       .values({
         title: task.title,
         subject,
-        dueDate: task.dueDate ? new Date(task.dueDate) : null,
+        dueDate,
         type: task.type,
         source: "email",
         externalId: task.messageId,

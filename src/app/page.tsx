@@ -13,7 +13,7 @@ export default async function Home() {
     .orderBy(sql`${tasks.dueDate} is null`, asc(tasks.dueDate), asc(tasks.createdAt));
 
   return (
-    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:py-16">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10 sm:py-16">
       <header className="mb-10 text-center">
         <h1 className="font-display text-6xl tracking-wide sm:text-7xl">
           AULARIO TO-DO

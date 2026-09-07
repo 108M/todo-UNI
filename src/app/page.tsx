@@ -18,9 +18,6 @@ export default async function Home() {
         <h1 className="font-display text-4xl tracking-wide sm:text-6xl lg:text-7xl">
           AULARIO TO-DO
         </h1>
-        <p className="mt-2 text-sm text-ink-soft sm:text-base">
-          Todo lo que te manda la uni, en un sitio. Sin entrar a Aulario.
-        </p>
       </header>
       <TaskBoard
         initialTasks={rows.map((row) => ({

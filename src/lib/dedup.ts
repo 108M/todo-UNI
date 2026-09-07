@@ -96,7 +96,10 @@ function wordsOverlapScore(a: string[], b: string[]): number {
   const matches = a.filter((wa) =>
     b.some((wb) => wa.startsWith(wb.slice(0, 5)) || wb.startsWith(wa.slice(0, 5))),
   ).length;
-  return matches / Math.max(a.length, b.length);
+  // Denominador = título más corto: dos resúmenes de la IA para el mismo
+  // aviso rara vez comparten *todas* las palabras, pero casi siempre las
+  // palabras clave del más corto aparecen en el más largo.
+  return matches / Math.min(a.length, b.length);
 }
 
 /**

@@ -89,6 +89,10 @@ export async function extractTasksFromEmails(
     config: {
       responseMimeType: "application/json",
       responseSchema: RESPONSE_SCHEMA,
+      // temperature 0: la extracción de fecha/asignatura debe ser
+      // determinista — con temperatura por defecto, el mismo texto a veces
+      // sacaba la fecha y a veces no, generando duplicados.
+      temperature: 0,
     },
   });
 

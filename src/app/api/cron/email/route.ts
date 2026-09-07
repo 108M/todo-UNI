@@ -5,7 +5,7 @@ import { fetchRecentEmails } from "@/lib/imap";
 import { isLikelyAcademic } from "@/lib/relevance";
 import { extractTasksFromEmails } from "@/lib/extract";
 import { detectCourseInText } from "@/lib/courses";
-import { existsSimilarTask } from "@/lib/dedup";
+import { existsSimilarTask, existsSimilarByTitle } from "@/lib/dedup";
 import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     const dueDate = task.dueDate ? new Date(task.dueDate) : null;
 
     if (await existsSimilarTask(subject, dueDate)) continue;
+    if (await existsSimilarByTitle(subject, task.title)) continue;
 
     const [row] = await db
       .insert(tasks)

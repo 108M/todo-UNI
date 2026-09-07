@@ -10,7 +10,7 @@ import {
 import { courseForSiteId } from "@/lib/courses";
 import { extractTasksFromEmails } from "@/lib/extract";
 import type { FetchedEmail } from "@/lib/imap";
-import { existsSimilarTask } from "@/lib/dedup";
+import { existsSimilarTask, existsSimilarByTitle } from "@/lib/dedup";
 import { notifyNewTasks } from "@/lib/notify";
 
 export const maxDuration = 60;
@@ -80,6 +80,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (await existsSimilarTask(subject, dueDate)) continue;
+    if (await existsSimilarByTitle(subject, title)) continue;
 
     const [row] = await db
       .insert(tasks)

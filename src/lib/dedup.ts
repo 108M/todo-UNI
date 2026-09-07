@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, isNotNull } from "drizzle-orm";
+import { and, eq, gte, lt, isNotNull, gt } from "drizzle-orm";
 import { getDb } from "@/db";
 import { tasks } from "@/db/schema";
 
@@ -7,9 +7,7 @@ import { tasks } from "@/db/schema";
  * Aulario — cada pipeline lo extrae por separado con un título ligeramente
  * distinto, así que el externalId no basta. Aquí se cruza por asignatura +
  * mismo día de entrega, que es lo que de verdad identifica "la misma tarea"
- * para el alumno. Solo aplica si ambos ya tienen asignatura y fecha (si no,
- * hay demasiadas tareas "sin fecha"/"sin asignatura" para que el cruce
- * signifique algo).
+ * para el alumno. Solo aplica si ambos ya tienen asignatura y fecha.
  */
 export async function existsSimilarTask(subject: string | null, dueDate: Date | null) {
   if (!subject || !dueDate) return false;
@@ -34,4 +32,74 @@ export async function existsSimilarTask(subject: string | null, dueDate: Date | 
     .limit(1);
 
   return rows.length > 0;
+}
+
+const STOPWORDS = new Set([
+  "de",
+  "del",
+  "la",
+  "el",
+  "los",
+  "las",
+  "en",
+  "con",
+  "sin",
+  "que",
+  "una",
+  "un",
+  "y",
+  "o",
+  "para",
+  "al",
+  "su",
+  "sus",
+]);
+
+const ACCENTS: Record<string, string> = {
+  á: "a",
+  é: "e",
+  í: "i",
+  ó: "o",
+  ú: "u",
+  ü: "u",
+  ñ: "n",
+};
+
+function stripAccents(text: string): string {
+  return text.replace(/[áéíóúüñ]/g, (ch) => ACCENTS[ch] ?? ch);
+}
+
+function normalizeWords(text: string): string[] {
+  return stripAccents(text.toLowerCase())
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 4 && !STOPWORDS.has(w));
+}
+
+function wordsOverlapScore(a: string[], b: string[]): number {
+  if (a.length === 0 || b.length === 0) return 0;
+  const matches = a.filter((wa) =>
+    b.some((wb) => wa.startsWith(wb.slice(0, 5)) || wb.startsWith(wa.slice(0, 5))),
+  ).length;
+  return matches / Math.max(a.length, b.length);
+}
+
+/**
+ * Red de seguridad para cuando la IA no saca la fecha en una de las dos
+ * fuentes (correo/Aulario) y el cruce por fecha no tiene nada con qué
+ * comparar: misma asignatura + título con suficiente solapamiento de
+ * palabras (singular/plural incluido, vía comparación por prefijo).
+ */
+export async function existsSimilarByTitle(subject: string | null, title: string) {
+  if (!subject) return false;
+
+  const db = getDb();
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const candidates = await db
+    .select({ title: tasks.title })
+    .from(tasks)
+    .where(and(eq(tasks.subject, subject), gt(tasks.createdAt, since)))
+    .limit(30);
+
+  const candidateWords = normalizeWords(title);
+  return candidates.some((c) => wordsOverlapScore(candidateWords, normalizeWords(c.title)) >= 0.4);
 }

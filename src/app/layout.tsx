@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bangers, Inter } from "next/font/google";
 import "./globals.css";
+import ServiceWorkerRegistrar from "@/components/service-worker-registrar";
 
 const displayFont = Bangers({
   weight: "400",
@@ -38,7 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ServiceWorkerRegistrar />
+        {children}
+      </body>
     </html>
   );
 }

@@ -35,7 +35,7 @@ export default function EnableNotificationsButton() {
   async function enable() {
     setBusy(true);
     try {
-      const reg = await navigator.serviceWorker.register("/sw.js");
+      const reg = await navigator.serviceWorker.ready;
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         setStatus(permission === "denied" ? "denied" : "off");

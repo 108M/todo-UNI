@@ -55,7 +55,7 @@ function buildPrompt(emails: FetchedEmail[], today: string) {
 
   return `Hoy es ${today}. Eres un asistente que revisa correos de una universidad española (notificaciones automáticas del campus virtual Aulario/Sakai y correos de profesores) y decide cuáles anuncian una tarea, entrega o examen con fecha.
 
-Para cada correo del array JSON de entrada, decide si contiene una tarea/entrega/examen con fecha límite identificable. Ignora correos administrativos genéricos, becas, eventos sociales, o avisos sin acción del alumno.
+Para cada correo del array JSON de entrada, decide si contiene una tarea/entrega/examen de una ASIGNATURA CONCRETA con fecha límite identificable. Ignora correos administrativos genéricos de la universidad (becas, eventos sociales, actos de graduación o bienvenida, jornadas, boletines) y, en particular, trámites de matrícula o inscripción que no sean de una asignatura del alumno — por ejemplo "inscripción al acto de bienvenida de máster" o "matrícula de pruebas de nivel de idiomas" NO son tareas, aunque tengan un plazo/fecha límite de inscripción. Solo cuentan como tarea los avisos de entregas, trabajos o exámenes de una asignatura concreta del campus virtual (Aulario/Sakai) o de un profesor.
 
 FECHA (dueDate) — sé activo buscándola, no la dejes en null a la ligera:
 - Los correos casi siempre incluyen una fecha en texto natural (ej. "antes del viernes 18 de septiembre", "para el lunes que viene", "hasta el 30/09"). Resuélvela SIEMPRE a una fecha absoluta ISO 8601 usando ${today} como referencia de "hoy".

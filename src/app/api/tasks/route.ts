@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { asc, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { tasks, taskType } from "@/db/schema";
 
@@ -8,6 +8,7 @@ export async function GET() {
   const rows = await db
     .select()
     .from(tasks)
+    .where(eq(tasks.dismissed, false))
     .orderBy(sql`${tasks.dueDate} is null`, asc(tasks.dueDate), asc(tasks.createdAt));
   return NextResponse.json(rows);
 }

@@ -24,6 +24,7 @@ export const tasks = pgTable(
     source: text("source").notNull().default("manual"),
     rawContent: text("raw_content"),
     done: boolean("done").notNull().default(false),
+    dismissed: boolean("dismissed").notNull().default(false),
     reminded2d: boolean("reminded_2d").notNull().default(false),
     reminded1d: boolean("reminded_1d").notNull().default(false),
     remindedToday: boolean("reminded_today").notNull().default(false),

@@ -52,7 +52,15 @@ export async function DELETE(
   }
 
   const db = getDb();
-  const [row] = await db.delete(tasks).where(eq(tasks.id, id)).returning();
+  // No se borra la fila: se marca como "dismissed". Si se borrara del todo,
+  // los tasks importados (email/aulario) perderían su externalId de la BD y
+  // el cron los volvería a crear en la siguiente pasada al no encontrarlos
+  // ya conocidos (ver getExistingExternalIds en lib/dedup.ts).
+  const [row] = await db
+    .update(tasks)
+    .set({ dismissed: true })
+    .where(eq(tasks.id, id))
+    .returning();
 
   if (!row) {
     return NextResponse.json({ error: "No encontrada" }, { status: 404 });

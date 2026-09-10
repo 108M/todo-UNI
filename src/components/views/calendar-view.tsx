@@ -66,30 +66,30 @@ export default function CalendarView({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="panel flex items-center justify-between p-3">
+      <div className="panel flex items-center justify-between gap-1 p-3">
         <button
           onClick={() => setMonthStart(new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1))}
-          className="panel-btn px-3 py-1 font-display text-xl"
+          className="panel-btn shrink-0 px-3 py-1 font-display text-xl"
           aria-label="Mes anterior"
         >
           ←
         </button>
-        <h3 className="font-display text-2xl tracking-wide capitalize">
+        <h3 className="min-w-0 flex-1 truncate text-center font-display text-lg tracking-wide capitalize sm:text-2xl">
           {MONTH_LABEL.format(monthStart)}
         </h3>
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           <button
             onClick={() => {
               setMonthStart(new Date(today.getFullYear(), today.getMonth(), 1));
               setSelectedKey(null);
             }}
-            className="panel-btn px-3 py-1 text-sm font-semibold"
+            className="panel-btn px-2 py-1 text-xs font-semibold sm:px-3 sm:text-sm"
           >
             HOY
           </button>
           <button
             onClick={() => setMonthStart(new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1))}
-            className="panel-btn px-3 py-1 font-display text-xl"
+            className="panel-btn shrink-0 px-3 py-1 font-display text-xl"
             aria-label="Mes siguiente"
           >
             →

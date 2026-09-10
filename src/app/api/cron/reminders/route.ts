@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
   const candidates = await db
     .select()
     .from(tasks)
-    .where(and(eq(tasks.done, false), gt(tasks.dueDate, now)));
+    .where(and(eq(tasks.done, false), eq(tasks.dismissed, false), gt(tasks.dueDate, now)));
 
   let sent = 0;
   for (const task of candidates) {

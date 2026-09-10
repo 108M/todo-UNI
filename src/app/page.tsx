@@ -1,6 +1,6 @@
 import { getDb } from "@/db";
 import { tasks } from "@/db/schema";
-import { asc, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import TaskBoard from "@/components/task-board";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +10,7 @@ export default async function Home() {
   const rows = await db
     .select()
     .from(tasks)
+    .where(eq(tasks.dismissed, false))
     .orderBy(sql`${tasks.dueDate} is null`, asc(tasks.dueDate), asc(tasks.createdAt));
 
   return (

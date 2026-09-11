@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# todo-UNI
 
-## Getting Started
+Gestor de tareas universitarias que se rellena solo: revisa periódicamente tu
+correo y el Aulario de la universidad, usa IA para extraer entregas y fechas
+límite, y te las organiza en agenda/calendario con recordatorios push — sin
+tener que apuntar nada a mano.
 
-First, run the development server:
+## Cómo funciona
+
+- **`api/cron/email`**: lee el buzón por IMAP (`imapflow` + `mailparser`) en
+  busca de correos de profesores/plataformas con tareas o exámenes.
+- **`api/cron/aulario`**: hace scraping del Aulario para detectar nuevas
+  entregas y avisos.
+- **Extracción con IA** (`src/lib/extract.ts`, Gemini vía `@google/genai`):
+  convierte el texto libre del correo/aulario en tareas estructuradas
+  (título, asignatura, fecha límite).
+- **Deduplicación y relevancia** (`dedup.ts`, `relevance.ts`): evita crear
+  tareas repetidas o irrelevantes (spam, avisos genéricos).
+- **`api/cron/reminders`**: manda notificaciones push (`web-push`) antes de
+  cada fecha límite.
+- **Vistas**: agenda, calendario y listado por asignaturas.
+
+## Stack
+
+- Next.js 16 + React 19
+- Drizzle ORM + Postgres
+- Google Gemini (`@google/genai`) para extracción de tareas
+- Web Push para recordatorios
+- Cron jobs (Vercel Cron) para las tareas periódicas
+
+## Desarrollo local
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Necesitas un `.env.local` con las credenciales de IMAP, la API key de
+Gemini, la conexión a Postgres y las claves VAPID para las notificaciones
+push.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estado
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proyecto personal para automatizar mi propia gestión de tareas de la
+carrera. Funciona con mi correo y mi universidad concretos — adaptar
+`aulario.ts` sería necesario para usarlo con otra plataforma.

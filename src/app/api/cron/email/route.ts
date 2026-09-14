@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     const subject = task.subject ?? (email ? detectCourseInText(email.text) : null);
     const dueDate = task.dueDate ? new Date(task.dueDate) : null;
 
-    if (await existsSimilarTask(subject, dueDate)) continue;
+    if (await existsSimilarTask(subject, dueDate, task.title)) continue;
     if (await existsSimilarByTitle(subject, task.title)) continue;
 
     const [row] = await db

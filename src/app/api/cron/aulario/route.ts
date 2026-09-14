@@ -84,11 +84,10 @@ export async function GET(req: NextRequest) {
         }
       }
     } else {
-      console.log(`[aulario] evento ignorado "${n.event}" (id ${n.id}, "${n.title}")`);
       continue; // otros tipos de evento (foros, calificaciones, etc.) se ignoran
     }
 
-    if (await existsSimilarTask(subject, dueDate)) continue;
+    if (await existsSimilarTask(subject, dueDate, title)) continue;
     if (await existsSimilarByTitle(subject, title)) continue;
 
     const [row] = await db

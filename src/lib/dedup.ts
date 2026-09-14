@@ -8,8 +8,15 @@ import { tasks } from "@/db/schema";
  * distinto, así que el externalId no basta. Aquí se cruza por asignatura +
  * mismo día de entrega, que es lo que de verdad identifica "la misma tarea"
  * para el alumno. Solo aplica si ambos ya tienen asignatura y fecha.
+ *
+ * Una asignatura puede tener más de una entrega el mismo día (p.ej. un
+ * ejercicio Y la propuesta de prácticas, ambos a las 17:00) — por eso no
+ * basta con "misma asignatura + mismo día": además se exige que el título
+ * comparta al menos una palabra clave con el de la tarea existente. Dos
+ * tareas realmente distintas casi nunca comparten ninguna, mientras que el
+ * mismo aviso extraído dos veces con títulos algo distintos casi siempre sí.
  */
-export async function existsSimilarTask(subject: string | null, dueDate: Date | null) {
+export async function existsSimilarTask(subject: string | null, dueDate: Date | null, title: string) {
   if (!subject || !dueDate) return false;
 
   const db = getDb();
@@ -19,7 +26,7 @@ export async function existsSimilarTask(subject: string | null, dueDate: Date | 
   endOfDay.setDate(endOfDay.getDate() + 1);
 
   const rows = await db
-    .select({ id: tasks.id, title: tasks.title })
+    .select({ title: tasks.title })
     .from(tasks)
     .where(
       and(
@@ -30,13 +37,10 @@ export async function existsSimilarTask(subject: string | null, dueDate: Date | 
         lt(tasks.dueDate, endOfDay),
       ),
     )
-    .limit(1);
+    .limit(10);
 
-  if (rows.length > 0) {
-    console.log(`[dedup] existsSimilarTask: "${subject}" ${dueDate.toISOString()} coincide con tarea #${rows[0].id} "${rows[0].title}"`);
-  }
-
-  return rows.length > 0;
+  const candidateWords = normalizeWords(title);
+  return rows.some((r) => wordsOverlapScore(candidateWords, normalizeWords(r.title)) > 0);
 }
 
 /**
@@ -119,17 +123,11 @@ export async function existsSimilarByTitle(subject: string | null, title: string
   const db = getDb();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const candidates = await db
-    .select({ id: tasks.id, title: tasks.title })
+    .select({ title: tasks.title })
     .from(tasks)
     .where(and(eq(tasks.subject, subject), eq(tasks.dismissed, false), gt(tasks.createdAt, since)))
     .limit(30);
 
   const candidateWords = normalizeWords(title);
-  const match = candidates.find((c) => wordsOverlapScore(candidateWords, normalizeWords(c.title)) >= 0.4);
-
-  if (match) {
-    console.log(`[dedup] existsSimilarByTitle: "${subject}" / "${title}" coincide con tarea #${match.id} "${match.title}"`);
-  }
-
-  return match !== undefined;
+  return candidates.some((c) => wordsOverlapScore(candidateWords, normalizeWords(c.title)) >= 0.4);
 }

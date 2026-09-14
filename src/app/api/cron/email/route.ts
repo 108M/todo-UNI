@@ -21,6 +21,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  if (process.env.DEMO_MODE === "true") {
+    return NextResponse.json({ demo: true, skipped: true });
+  }
+
   const emails = await fetchRecentEmails(3);
   const relevant = emails.filter(isLikelyAcademic);
 

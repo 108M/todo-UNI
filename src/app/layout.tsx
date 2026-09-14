@@ -40,6 +40,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        {process.env.DEMO_MODE === "true" && (
+          <div className="w-full bg-amber-400 text-black text-sm text-center py-1.5 px-4 font-medium">
+            Modo demo — datos de ejemplo, no hay correo ni Aulario reales conectados. Se reinician periódicamente.
+          </div>
+        )}
         <ServiceWorkerRegistrar />
         {children}
       </body>

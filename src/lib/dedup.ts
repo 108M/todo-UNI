@@ -19,17 +19,22 @@ export async function existsSimilarTask(subject: string | null, dueDate: Date | 
   endOfDay.setDate(endOfDay.getDate() + 1);
 
   const rows = await db
-    .select({ id: tasks.id })
+    .select({ id: tasks.id, title: tasks.title })
     .from(tasks)
     .where(
       and(
         eq(tasks.subject, subject),
+        eq(tasks.dismissed, false),
         isNotNull(tasks.dueDate),
         gte(tasks.dueDate, startOfDay),
         lt(tasks.dueDate, endOfDay),
       ),
     )
     .limit(1);
+
+  if (rows.length > 0) {
+    console.log(`[dedup] existsSimilarTask: "${subject}" ${dueDate.toISOString()} coincide con tarea #${rows[0].id} "${rows[0].title}"`);
+  }
 
   return rows.length > 0;
 }
@@ -114,11 +119,17 @@ export async function existsSimilarByTitle(subject: string | null, title: string
   const db = getDb();
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const candidates = await db
-    .select({ title: tasks.title })
+    .select({ id: tasks.id, title: tasks.title })
     .from(tasks)
-    .where(and(eq(tasks.subject, subject), gt(tasks.createdAt, since)))
+    .where(and(eq(tasks.subject, subject), eq(tasks.dismissed, false), gt(tasks.createdAt, since)))
     .limit(30);
 
   const candidateWords = normalizeWords(title);
-  return candidates.some((c) => wordsOverlapScore(candidateWords, normalizeWords(c.title)) >= 0.4);
+  const match = candidates.find((c) => wordsOverlapScore(candidateWords, normalizeWords(c.title)) >= 0.4);
+
+  if (match) {
+    console.log(`[dedup] existsSimilarByTitle: "${subject}" / "${title}" coincide con tarea #${match.id} "${match.title}"`);
+  }
+
+  return match !== undefined;
 }

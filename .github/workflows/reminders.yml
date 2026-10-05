@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Comprobar entregas próximas
         run: |
-          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -sS --fail-with-body --retry 2 --retry-delay 15 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             https://todo-uni.vercel.app/api/cron/reminders
